@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CourseController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,6 +21,7 @@ Route::middleware(['auth','admin'])
         Route::get('/', function () {
             return view('admin.dashboard');
         })->name('dashboard');
+    Route::resource('courses', CourseController::class)->except('show');
     });
 
 Route::middleware('auth')->group(function () {
