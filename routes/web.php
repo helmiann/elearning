@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\LessonController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,6 +23,12 @@ Route::middleware(['auth','admin'])
             return view('admin.dashboard');
         })->name('dashboard');
     Route::resource('courses', CourseController::class)->except('show');
+    Route::resource('courses.lessons',LessonController::class)
+        ->shallow()
+        ->except('show');
+    Route::patch('lessons/{lesson}/move/{direction}', [LessonController::class,'move'])
+        ->whereIn('direction', ['up', 'down'])
+        ->name('lessons.move');
     });
 
 Route::middleware('auth')->group(function () {

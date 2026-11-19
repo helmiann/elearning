@@ -13,7 +13,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::latest()->paginate(10);
+        $courses = Course::withCount('lessons')->latest()->paginate(10);
         return view('admin.courses.index', compact('courses'));
     }
 

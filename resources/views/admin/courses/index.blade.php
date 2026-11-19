@@ -37,6 +37,8 @@
                                 @endif
                             </td>
                             <td class="p-3 text-right space-x-3">
+                                <a href="{{ route('admin.courses.lessons.index', $course) }}"
+                                   class="text-gray-700">Lesson ({{ $course->lessons_count }})</a>
                                 <a href="{{ route('admin.courses.edit', $course) }}"
                                    class="text-indigo-600">Edit</a>
                                 <form action="{{ route('admin.courses.destroy', $course) }}"
