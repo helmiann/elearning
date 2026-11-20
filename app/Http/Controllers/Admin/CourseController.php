@@ -81,6 +81,9 @@ class CourseController extends Controller
      */
     public function destroy(course $course)
     {
+        foreach ($course->lessons as $lesson) {
+            $lesson->deleteVideofile();
+        }
         $course->delete();
 
         return redirect()->route('admin.courses.index')

@@ -27,6 +27,7 @@
                     <tr>
                         <th class="p-3 w-12">#</th>
                         <th class="p-3">Judul</th>
+                        <th class="p-3">Video</th>
                         <th class="p-3">Urutan</th>
                         <th class="p-3 text-right">Aksi</th>
                     </tr>
@@ -36,6 +37,7 @@
                         <tr class="border-t">
                             <td class="p-3">{{ $loop->iteration }}</td>
                             <td class="p-3">{{ $lesson->title }}</td>
+                            <td class="p-3">{{ $lesson->videoStatusLabel() }}</td>
                             <td class="p-3">
                                 <div class="flex gap-1">
                                     <form method="POST"
@@ -65,7 +67,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="p-6 text-center text-gray-500">
+                            <td colspan="5" class="p-6 text-center text-gray-500">
                                 Belum ada lesson.
                             </td>
                         </tr>

@@ -59,6 +59,7 @@ class LessonController extends Controller
     public function destroy(Lesson $lesson)
     {
         $courseId = $lesson->course_id;
+        $lesson->deleteVideoFile();
         $lesson->delete();
 
         return redirect()->route('admin.courses.lessons.index', $courseId)

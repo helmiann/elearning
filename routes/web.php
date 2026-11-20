@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\LessonController;
+use App\Http\Controllers\Admin\LessonVideoController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,6 +30,8 @@ Route::middleware(['auth','admin'])
     Route::patch('lessons/{lesson}/move/{direction}', [LessonController::class,'move'])
         ->whereIn('direction', ['up', 'down'])
         ->name('lessons.move');
+    Route::post('lessons/{lesson}/video', [LessonVideoController::class,'store'])
+    ->name('lessons.video.store');
     });
 
 Route::middleware('auth')->group(function () {
