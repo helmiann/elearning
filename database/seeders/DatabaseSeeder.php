@@ -23,5 +23,6 @@ class DatabaseSeeder extends Seeder
             $user->role = $role;
             $user->save();
         }
+        $this->call(DemoContentSeeder::class);
     }
 }
