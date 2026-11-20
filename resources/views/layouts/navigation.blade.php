@@ -15,10 +15,14 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('courses.index')"
+                        :active="request()->routeIs('courses.*') || request()->routeIs('lessons.*')">
+                        Courses
+                    </x-nav-link>
                     @if (auth()->user()->isAdmin())
                         <x-nav-link :href="route('admin.courses.index')"
                             :active="request()->routeIs('admin.courses.*')">
-                             Courses
+                             Kelola Courses
                         </x-nav-link>
                     @endif
                 </div>
