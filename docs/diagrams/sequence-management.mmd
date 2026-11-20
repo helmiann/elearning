@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor A as Admin
+    participant B as Browser
+    participant L as Laravel
+    participant D as MySQL
+
+    A->>B: Login
+    B->>L: POST /login
+    L-->>B: Redirect ke /admin
+    A->>B: Tambah course
+    B->>L: POST /admin/courses
+    L->>L: Middleware auth + admin, validasi input
+    L->>D: INSERT courses
+    L-->>B: Redirect ke daftar course
+    A->>B: Tambah lesson di course
+    B->>L: POST /admin/courses/{id}/lessons
+    L->>D: Hitung position terakhir, INSERT lessons
+    L-->>B: Redirect ke daftar lesson
+    A->>B: Klik tombol naik / turun
+    B->>L: PATCH /admin/lessons/{id}/move/up
+    L->>D: Tukar position dengan lesson tetangga (transaksi)
+    L-->>B: Kembali ke daftar lesson

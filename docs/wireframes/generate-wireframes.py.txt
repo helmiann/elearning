@@ -1,0 +1,189 @@
+import subprocess, pathlib
+
+CSS = """
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Open Sans',Arial,sans-serif;background:#fff;color:#374151;font-size:14px}
+.frame{border:2px solid #6b7280;border-radius:10px;overflow:hidden;background:#f3f4f6;margin:16px}
+.urlbar{background:#e5e7eb;border-bottom:2px solid #6b7280;padding:8px 14px;font-size:12px;color:#4b5563;display:flex;gap:10px;align-items:center}
+.urlbar .dots{letter-spacing:3px;color:#9ca3af}
+.urlbar .url{background:#fff;border:1px solid #9ca3af;border-radius:14px;padding:3px 14px;flex:1}
+.nav{background:#fff;border-bottom:2px solid #9ca3af;padding:12px 24px;display:flex;align-items:center;gap:26px}
+.logo{width:34px;height:34px;border:2px solid #6b7280;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.nav .link{font-weight:500}.nav .active{border-bottom:3px solid #4b5563;padding-bottom:4px;font-weight:700}
+.nav .user{margin-left:auto;border:2px solid #9ca3af;border-radius:6px;padding:4px 12px}
+.header{background:#fff;border-bottom:2px solid #d1d5db;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:18px;color:#1f2937}
+.content{padding:24px;}
+.card{background:#fff;border:2px solid #9ca3af;border-radius:8px;padding:18px}
+.btn{display:inline-block;background:#9ca3af;color:#fff;border-radius:6px;padding:7px 14px;font-weight:600;font-size:13px}
+.btn.line{background:#fff;color:#4b5563;border:2px solid #9ca3af}
+.btn.danger{background:#fff;color:#4b5563;border:2px dashed #6b7280}
+.input{border:2px solid #9ca3af;border-radius:6px;background:#fff;padding:8px 10px;color:#9ca3af;margin-top:6px}
+.lbl{font-weight:600;color:#4b5563;margin-top:14px}
+table{width:100%;border-collapse:collapse}
+th{background:#e5e7eb;text-align:left;padding:10px 12px;font-size:13px}
+td{padding:11px 12px;border-top:2px solid #e5e7eb}
+.tag{border:2px solid #9ca3af;border-radius:10px;padding:1px 9px;font-size:12px}
+.tag.ok{background:#e5e7eb;font-weight:600}
+.flash{background:#e5e7eb;border:2px solid #9ca3af;border-radius:6px;padding:9px 12px;margin-bottom:14px}
+.ph{background:repeating-linear-gradient(45deg,#e5e7eb,#e5e7eb 10px,#f3f4f6 10px,#f3f4f6 20px);border:2px solid #9ca3af;display:flex;align-items:center;justify-content:center;color:#6b7280;font-weight:600}
+.bar{height:14px;border:2px solid #9ca3af;border-radius:8px;background:#fff;overflow:hidden}.bar i{display:block;height:100%;width:62%;background:#9ca3af}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.note{font-size:12px;color:#6b7280;font-style:italic;margin-top:6px}
+.row{display:flex;gap:10px;align-items:center}
+.small{font-size:12px;color:#6b7280}
+.side a{display:block;padding:10px 12px;border-top:2px solid #e5e7eb}
+.side a.cur{background:#e5e7eb;font-weight:700}
+.label{position:absolute;top:-2px;left:-2px}
+"""
+
+def page(title, url, body, w=1280, h=760, mobile=False):
+    return f"""<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>
+<div style='padding:10px 18px 0;font-weight:700;color:#1f2937;font-size:15px'>{title}</div>
+<div class='frame' style='width:{w-32}px'>
+<div class='urlbar'><span class='dots'>● ● ●</span><span class='url'>{url}</span></div>
+{body}</div></body></html>"""
+
+def nav(role, active):
+    if role == 'admin':
+        links = [('Dashboard','dash'),('Kelola Course','kelola'),('Courses','courses')]
+    else:
+        links = [('Dashboard','dash'),('Courses','courses')]
+    ls = ''.join(f"<span class='link {'active' if k==active else ''}'>{t}</span>" for t,k in links)
+    return f"<div class='nav'><div class='logo'>LOGO</div>{ls}<span class='user'>Nama Pengguna ▾</span></div>"
+
+pages = {}
+
+# 1 Login
+pages['01-login'] = page("Wireframe 1 — Login (dan Register)", "/login  ·  /register", f"""
+<div class='content' style='height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px'>
+ <div class='logo' style='width:60px;height:60px'>LOGO</div>
+ <div class='card' style='width:420px'>
+  <div class='lbl' style='margin-top:0'>Email</div><div class='input'>email@contoh.com</div>
+  <div class='lbl'>Password</div><div class='input'>••••••••</div>
+  <div class='row' style='margin-top:14px'><span class='tag'>☐</span><span class='small'>Remember me</span></div>
+  <div class='row' style='margin-top:18px;justify-content:space-between'><span class='small' style='text-decoration:underline'>Lupa password?</span><span class='btn'>Log in</span></div>
+ </div>
+ <div class='note'>Register: field Nama, Email, Password, Konfirmasi Password · akun baru otomatis berperan Student</div>
+</div>""")
+
+# 2 Admin course list
+rows = ''.join(f"<tr><td>{t}</td><td><span class='tag {'ok' if p else ''}'>{'Published' if p else 'Draft'}</span></td><td style='text-align:right'><span class='small' style='margin-right:14px'>Lesson ({n})</span><span class='small' style='margin-right:14px'>Edit</span><span class='small'>Hapus</span></td></tr>" for t,p,n in [('Dasar-dasar Pemrograman Web',1,4),('Pengantar Framework Laravel',1,4),('Dasar Basis Data MySQL',0,2)])
+pages['02-admin-daftar-course'] = page("Wireframe 2 — Admin: Daftar Course", "/admin/courses", f"""
+{nav('admin','kelola')}
+<div class='header'><h1>Kelola Course</h1><span class='btn'>+ Tambah Course</span></div>
+<div class='content' style='height:470px'>
+ <div class='flash'>✓ Course berhasil ditambahkan.</div>
+ <div class='card' style='padding:0;overflow:hidden'>
+  <table><tr><th>Judul</th><th>Status</th><th style='text-align:right'>Aksi</th></tr>{rows}</table>
+ </div>
+ <div class='note' style='margin-top:14px'>Pagination 10 data per halaman · Hapus meminta konfirmasi · Lesson (n) membuka daftar lesson course tersebut</div>
+</div>""", h=700)
+
+# 3 Admin course form
+pages['03-admin-form-course'] = page("Wireframe 3 — Admin: Tambah / Ubah Course", "/admin/courses/create  ·  /admin/courses/{id}/edit", f"""
+{nav('admin','kelola')}
+<div class='header'><h1>Tambah Course</h1></div>
+<div class='content' style='height:520px;display:flex;justify-content:center'>
+ <div class='card' style='width:760px;height:fit-content'>
+  <div class='lbl' style='margin-top:0'>Judul</div><div class='input'>Judul course</div>
+  <div class='small' style='color:#4b5563;margin-top:4px'>⚠ pesan error validasi tampil di sini</div>
+  <div class='lbl'>Deskripsi</div><div class='input' style='height:110px'>Deskripsi course…</div>
+  <div class='row' style='margin-top:16px'><span class='tag'>☐</span><span>Publikasikan course</span></div>
+  <div class='row' style='margin-top:22px'><span class='btn'>Simpan</span><span class='small' style='margin-left:8px'>Batal</span></div>
+ </div>
+</div>""", h=700)
+
+# 4 Admin lesson list
+lrows = ''.join(f"<tr><td>{i}</td><td>{t}</td><td><span class='tag {'ok' if v=='Siap' else ''}'>{v}</span></td><td><span class='tag'>↑</span> <span class='tag'>↓</span></td><td style='text-align:right'><span class='small' style='margin-right:14px'>Edit</span><span class='small'>Hapus</span></td></tr>" for i,t,v in [(1,'Pengenalan Web dan Internet','Siap'),(2,'Struktur Dasar HTML','Siap'),(3,'Mengenal CSS','Gagal'),(4,'Dasar JavaScript','Belum ada video')])
+pages['04-admin-daftar-lesson'] = page("Wireframe 4 — Admin: Daftar Lesson (urutan & status video)", "/admin/courses/{id}/lessons", f"""
+{nav('admin','kelola')}
+<div class='header'><h1>Lesson: Dasar-dasar Pemrograman Web</h1><span class='btn'>+ Tambah Lesson</span></div>
+<div class='content' style='height:470px'>
+ <div class='small' style='margin-bottom:10px'>← Kembali ke daftar course</div>
+ <div class='card' style='padding:0;overflow:hidden'>
+  <table><tr><th style='width:50px'>#</th><th>Judul</th><th>Video</th><th>Urutan</th><th style='text-align:right'>Aksi</th></tr>{lrows}</table>
+ </div>
+ <div class='note' style='margin-top:14px'>↑ dinonaktifkan pada baris pertama, ↓ pada baris terakhir · status video: Belum ada video / Sedang diunggah / Siap / Gagal</div>
+</div>""", h=700)
+
+# 5 Admin lesson edit + upload
+pages['05-admin-edit-lesson-upload'] = page("Wireframe 5 — Admin: Ubah Lesson & Upload Video", "/admin/lessons/{id}/edit", f"""
+{nav('admin','kelola')}
+<div class='header'><h1>Ubah Lesson</h1></div>
+<div class='content' style='height:640px;display:flex;flex-direction:column;align-items:center;gap:18px'>
+ <div class='card' style='width:760px'>
+  <div class='lbl' style='margin-top:0'>Judul Lesson</div><div class='input'>Struktur Dasar HTML</div>
+  <div class='lbl'>Deskripsi (opsional)</div><div class='input' style='height:70px'>Tag, atribut, dan kerangka halaman…</div>
+  <div class='row' style='margin-top:18px'><span class='btn'>Perbarui</span><span class='small' style='margin-left:8px'>Batal</span></div>
+ </div>
+ <div class='card' style='width:760px'>
+  <div style='font-weight:700;color:#1f2937'>Video Lesson</div>
+  <div class='small' style='margin-top:8px'>Status: <b>Sedang diunggah</b></div>
+  <div class='small'>File: kenalan-html.mp4</div>
+  <div class='row' style='margin-top:14px'><div class='input' style='margin:0;flex:1'>📁 Pilih file video…</div><span class='btn'>Upload</span></div>
+  <div class='bar' style='margin-top:14px'><i></i></div>
+  <div class='small' style='margin-top:6px'>Mengunggah… 62%</div>
+  <div class='note'>Format MP4 atau WebM, maksimal 200 MB</div>
+ </div>
+</div>""", h=840)
+
+# 6 Student course list
+cards = ''.join(f"<div class='card'><div style='font-weight:700;color:#1f2937'>{t}</div><div class='small' style='margin-top:8px;line-height:1.5'>Deskripsi singkat course dipotong sampai 100 karakter…</div><div class='small' style='margin-top:14px'>{n} lesson</div></div>" for t,n in [('Dasar-dasar Pemrograman Web',4),('Pengantar Framework Laravel',4),('Judul Course Lain',6)])
+pages['06-student-daftar-course'] = page("Wireframe 6 — Student: Daftar Course", "/courses", f"""
+{nav('student','courses')}
+<div class='header'><h1>Daftar Course</h1></div>
+<div class='content' style='height:470px'>
+ <div class='grid3'>{cards}</div>
+ <div class='note' style='margin-top:18px'>Hanya course berstatus Published · grid 3 kolom di desktop, 2 di tablet, 1 di mobile · pagination 9 data</div>
+</div>""", h=700)
+
+# 7 Student course detail
+lst = ''.join(f"<div style='padding:14px 16px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between'><span><span class='small' style='margin-right:12px'>{i}</span>{t}</span><span class='small'>{s}</span></div>" for i,t,s in [(1,'Pengenalan Web dan Internet',''),(2,'Struktur Dasar HTML',''),(3,'Mengenal CSS','Video belum tersedia'),(4,'Dasar JavaScript','Video belum tersedia')])
+pages['07-student-detail-course'] = page("Wireframe 7 — Student: Detail Course", "/courses/{id}", f"""
+{nav('student','courses')}
+<div class='header'><h1>Dasar-dasar Pemrograman Web</h1></div>
+<div class='content' style='height:500px;display:flex;flex-direction:column;align-items:center'>
+ <div style='width:860px'>
+  <div class='small' style='margin-bottom:10px'>← Semua course</div>
+  <div class='card'><div class='small' style='line-height:1.7;font-size:14px'>Deskripsi lengkap course. Kenali cara kerja web dan bangun halaman pertamamu…</div></div>
+  <div style='font-weight:700;margin:22px 0 10px;color:#1f2937'>Daftar Lesson</div>
+  <div class='card' style='padding:0;overflow:hidden'>{lst.replace("border-top:2px solid #e5e7eb;","",1)}</div>
+ </div>
+</div>""", h=720)
+
+# 8 Student player
+side = ''.join(f"<a class='{'cur' if i==2 else ''}'>{i}. {t}</a>" for i,t in [(1,'Pengenalan Web dan Internet'),(2,'Struktur Dasar HTML'),(3,'Mengenal CSS'),(4,'Dasar JavaScript')])
+pages['08-student-pemutar-video'] = page("Wireframe 8 — Student: Pemutar Video Lesson", "/lessons/{id}", f"""
+{nav('student','courses')}
+<div class='header'><h1>Dasar-dasar Pemrograman Web</h1></div>
+<div class='content' style='height:560px'>
+ <div class='small' style='margin-bottom:10px'>← Kembali ke course</div>
+ <div style='display:grid;grid-template-columns:2fr 1fr;gap:22px'>
+  <div>
+   <div class='ph' style='height:330px;font-size:18px;background:#d1d5db'>▶  Pemutar Video (stream dari storage privat)</div>
+   <div style='font-weight:700;font-size:17px;margin-top:14px;color:#1f2937'>Struktur Dasar HTML</div>
+   <div class='small' style='margin-top:6px;font-size:14px;line-height:1.6'>Deskripsi lesson: tag, atribut, dan kerangka halaman HTML.</div>
+   <div class='note' style='margin-top:14px'>Jika video belum ready: area hitam bertuliskan "Video untuk lesson ini belum tersedia."</div>
+  </div>
+  <div class='card side' style='padding:0;overflow:hidden;height:fit-content'>{side.replace("<a class='' >","<a>",1).replace("<a class=''>","<a style='border-top:none'>",1)}</div>
+ </div>
+</div>""", h=780)
+
+# 9 Mobile player (390 wide)
+pages['09-mobile-pemutar-video'] = page("Wireframe 9 — Tampilan Mobile: Pemutar Video", "/lessons/{id}", f"""
+<div class='nav' style='padding:10px 14px;gap:12px'><div class='logo'>LOGO</div><span class='user' style='font-size:12px'>☰</span></div>
+<div class='header' style='padding:12px 14px'><h1 style='font-size:15px'>Dasar-dasar Pemrograman Web</h1></div>
+<div class='content' style='padding:14px'>
+ <div class='small' style='margin-bottom:8px'>← Kembali ke course</div>
+ <div class='ph' style='height:190px;background:#d1d5db'>▶ Video</div>
+ <div style='font-weight:700;margin-top:12px;color:#1f2937'>Struktur Dasar HTML</div>
+ <div class='small' style='margin-top:6px;line-height:1.5'>Deskripsi lesson…</div>
+ <div class='card side' style='padding:0;overflow:hidden;margin-top:14px'>{side.replace("<a class='' >","<a>",1).replace("<a class=''>","<a style='border-top:none'>",1)}</div>
+ <div class='note'>Layout satu kolom: daftar lesson turun di bawah video</div>
+</div>""", w=422, h=900)
+
+sizes = {'09-mobile-pemutar-video':(422,880)}
+for name, html in pages.items():
+    pathlib.Path(f"{name}.html").write_text(html, encoding='utf-8')
+print(len(pages), 'html written')

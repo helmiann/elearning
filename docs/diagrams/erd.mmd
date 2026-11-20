@@ -1,0 +1,28 @@
+erDiagram
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        string role "admin | student"
+        timestamp created_at
+    }
+    COURSES {
+        bigint id PK
+        string title
+        text description
+        boolean is_published
+        timestamp created_at
+    }
+    LESSONS {
+        bigint id PK
+        bigint course_id FK
+        string title
+        text description
+        int position
+        string video_path
+        string video_original_name
+        string video_status "uploading | ready | failed"
+        timestamp created_at
+    }
+    COURSES ||--o{ LESSONS : "memiliki"

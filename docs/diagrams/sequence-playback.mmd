@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor U as Student
+    participant B as Browser
+    participant L as Laravel
+    participant P as CoursePolicy
+    participant D as MySQL
+    participant F as Private Storage
+
+    U->>B: Buka halaman lesson
+    B->>L: GET /lessons/{id}
+    L->>L: Middleware auth (sudah login?)
+    L->>D: Ambil lesson dan course
+    L->>P: view(user, course)
+    alt Admin atau course published
+        P-->>L: diizinkan
+        L-->>B: Halaman dengan tag video
+        B->>L: GET /lessons/{id}/video (+ header Range)
+        L->>P: view(user, course)
+        L->>D: Cek video_status = ready
+        L->>F: Baca file video
+        L-->>B: 206 Partial Content (stream video)
+    else Course draft dan user student
+        P-->>L: ditolak
+        L-->>B: 403 Forbidden
+    end

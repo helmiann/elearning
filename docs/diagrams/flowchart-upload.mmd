@@ -1,0 +1,15 @@
+flowchart TD
+    Start([Mulai]) --> Pilih["Admin memilih file video di halaman edit lesson"]
+    Pilih --> Kirim["Browser mengirim file via XHR<br/>dengan progress bar"]
+    Kirim --> Valid{"Format MP4/WebM<br/>dan ukuran valid?"}
+    Valid -- Tidak --> Err422["Server membalas 422<br/>video lama tetap aman"]
+    Err422 --> Pesan["Tampilkan pesan error"]
+    Valid -- Ya --> Hapus["Hapus video lama (jika ada)"]
+    Hapus --> Up["status = uploading"]
+    Up --> Simpan{"File berhasil disimpan<br/>ke storage privat?"}
+    Simpan -- Tidak --> Fail["status = failed<br/>server membalas 500"]
+    Simpan -- Ya --> Ready["status = ready<br/>simpan path & nama file"]
+    Fail --> Pesan
+    Ready --> Sukses["Tampilkan status Siap"]
+    Pesan --> End([Selesai])
+    Sukses --> End

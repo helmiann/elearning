@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph Client["Browser"]
+        A["Admin<br/>(kelola course, lesson, upload video)"]
+        S["Student<br/>(lihat course, putar video)"]
+    end
+
+    subgraph App["Aplikasi Laravel"]
+        MW["Middleware<br/>auth + admin"]
+        POL["Policy<br/>CoursePolicy"]
+        CTRL["Controller<br/>Course, Lesson, Video"]
+        MOD["Model Eloquent<br/>User, Course, Lesson"]
+        VIEW["View Blade + Tailwind"]
+    end
+
+    DB[("MySQL<br/>users, courses, lessons")]
+    FS[("Private Storage<br/>storage/app/private/videos")]
+
+    A -->|HTTP / XHR upload| MW
+    S -->|HTTP| MW
+    MW --> CTRL
+    CTRL --> POL
+    CTRL --> MOD
+    CTRL --> VIEW
+    MOD --> DB
+    CTRL -->|simpan / baca file| FS
